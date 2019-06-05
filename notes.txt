@@ -1,0 +1,21 @@
+Application:
+    Config/Script/Misc Files:
+        For shared configs like .Xresources:
+            syntax to cut out relevant sections
+        name
+        location
+    Colors:
+        Palettes --assortment of colors
+        "Arrangements" --"Purpose" for each color (FG, BG, highlights, etc)
+        Syntax for config files --support for different color types (hex, rgb, etc)
+    Dependencies:
+        Packages:
+            required repos
+        Other Dependencies:
+            installation scripts (github etc)
+         
+Example:
+    urxvt:
+        Configs: .Xresources cutout
+        Colors:  Colors in .Xresources
+        Dependencies: Whatever fonts are needed (inconsolata etc)
