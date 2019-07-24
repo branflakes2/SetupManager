@@ -1,0 +1,126 @@
+For uefi boot, verify that you're actually on a uefi capapble system:
+
+    ls /sys/firmware/efi/efivars
+
+If stuff pops up, efi works
+
+Check for internet access:
+
+    ping google.com -c1
+
+timdatectl set-ntp true
+
+partition:
+
+use sfdisk file with space for input to vary sizes
+sfdisk /dev/sdx < sda.sfdisk
+mkfs.fs /dev/sdx1
+mkswap /dev/sdx2
+mkfs.ext4 /dev/sdx3
+mount /dev/sdx3 /mnt
+mount /dev/sdx2 /mnt/boot
+
+pacstrap /mnt base
+
+arch-chroot /mnt
+
+set hostname
+
+echo $hostname > /etc/hostname
+
+echo "127.0.0.1\tlocalhost\n::1\tlocalhost\n127.0.1.1\t$hostname.localdomain $hostname" > /etc/hosts
+
+mkinitcpio -p linux
+
+passwd
+
+pacman -S grub efibootmgr
+
+grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
+grub-mkconfig -o /boot/grub/grub.cfg
+
+on a VM make sure UEFI is turned on in the VM settings. Then copy
+/boot/EFI/grub/grubx64.efi to /boot/EFI/BOOT/BOOTX64.EFI
+
+pacman -S intel-ucode   
+
+systemctl enable dhcpcd@<interface>
+
+logout
+reboot
+
+add new user
+useradd -m <user>
+usermod -aG wheel <user>
+visudo #uncomment %wheel ALL=(ALL) ALL 
+
+install and run reflector:
+reflector --verbose --latest 100 --sort rate --save /etc/pacman.d/mirrorlist
+
+install yay:
+git clone https://aur.archlinux.org/yay.git
+cd yay
+makepkg -si
+cd ..
+rm -rf yay
+
+install vim
+install i3
+install feh
+install lightdm
+install lightdm-webkit2-greeter
+install git
+
+for a VM guest:
+install virtualbox-guest-utils, choose the -arch option
+enable vboxservice.service
+
+copy based .vimrc to ~/.vimrc
+
+install pathogen:
+mkdir ~/.vim
+cd ~/.vim
+git clone https://github.com/tpope/vim-pathogen . <-- notice the .
+add to vimrc: execute pathogen#incect()
+
+install vim solarized:
+mkdir ~/.vim/bundle
+cd ~/.vim/bundle
+git clone https://github.com/altercation/vim-colors-solarized <-- no . this time
+add to ~/.vimrc : colorscheme solarized
+                  set background=dark
+
+Setup lightdm:
+systemctl enable lightdm
+set greeter session:
+in /etc/lightdm/lightdm.conf
+uncomment
+[Seat:*] greeter-session=lightdm-<yourgreeter>-greeter for yourgreeter=webkit2
+for lightdm-webkit2-greeter
+
+Edit webkit2 greeter settings
+in /etc/lightdm/lightdm-webkit2-greeter.conf
+edit background image:
+[branding]
+background_images = /usr/share/backgrounds
+
+Avatar:
+install accountsservice
+create the file /var/lib/AccountsService/icons/<user>.png using a 96x96 png image
+edit/create /var/lib/AccountsService/users/<user> and add:
+[User]
+Icon=/var/lib/AccountsService/icons/<user>.png
+
+Install material theme:
+yay -S lightdm-webkit-theme-material-git
+set webkit-theme to material under [greeter]
+
+Install urxvt pacman -S rxvt-unicode
+Install ttf-dejavu
+edit ~/.Xresources for color scheme and rxvt settings
+Install polybar: yay -S polybar
+install ttf-material-design-icons
+
+install firefox
+
+copy images for background, profile, etc

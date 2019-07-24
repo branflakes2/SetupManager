@@ -19,3 +19,25 @@ Example:
         Configs: .Xresources cutout
         Colors:  Colors in .Xresources
         Dependencies: Whatever fonts are needed (inconsolata etc)
+
+---format---
+
+global_color_scheme: name
+
+AppName{
+
+    color_scheme: override_name
+
+    config{
+        name: name_of_config1
+        location: where_to_copy
+        cutout: true
+    }
+
+    config{
+        name: name_of_config2
+        location:
+        cutout:
+    }
+
+}
