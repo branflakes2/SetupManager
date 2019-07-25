@@ -24,6 +24,10 @@ pacstrap /mnt base
 
 arch-chroot /mnt
 
+set locale
+uncomment right locale in /etc/locale.conf
+run locale-gen
+
 set hostname
 
 echo $hostname > /etc/hostname
