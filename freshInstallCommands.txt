@@ -46,7 +46,7 @@ grub-mkconfig -o /boot/grub/grub.cfg
 on a VM make sure UEFI is turned on in the VM settings. Then copy
 /boot/EFI/grub/grubx64.efi to /boot/EFI/BOOT/BOOTX64.EFI
 
-pacman -S intel-ucode   
+pacman -S intel-ucode #maybe not necessary on a vm
 
 systemctl enable dhcpcd@<interface>
 
@@ -124,7 +124,71 @@ Install ttf-dejavu
 edit ~/.Xresources for color scheme and rxvt settings
 Install polybar: yay -S polybar
 install ttf-material-design-icons
+the following fonts are also required:
+    NotoSans-Regular
+    MaterialIcons from google
+    Termsynu
+    FontAwesome
+    unifont
 
 install firefox
 
 copy images for background, profile, etc
+
+###install zsh###
+set as default shell in i3 config
+change command for alt-enter to urxvt -e /bin/zsh
+this way it won't use zsh on tty, but it will for urxvt inside i3
+use the ~/.zshrc
+
+###powerline installation###
+pacman -S powerline powerline-fonts
+edit .Xresources to use the Deja Vu Sans Mono for Powerline font
+
+add this to the .vimrc:
+
+"use powerline status bar
+set rtp+=/usr/lib/python3.7/site-packages/powerline/bindings/vim/
+set laststatus=2
+set t_Co=256
+
+"slow insert exit fix
+if ! has('gui_running')
+  set ttimeoutlen=10
+  augroup FastEscape
+    autocmd!
+    au InsertEnter * set timeoutlen=0
+    au InsertLeave * set timeoutlen=1000
+  augroup END
+endif
+
+###install python-powerline-gitstatus###
+python2 setupconfig wasn't importing for me so I had to:
+git clone https://aur.archlinux.org/python-powerline-gitstatus.git
+change python setup.py to python3 setup.py under build()
+then makepkg -si
+
+add to the groups json object in /usr/lib/python3.7/site-packages/powerline/config-files/colorschemes/default.json:
+"gitstatus":                 { "fg": "gray8",           "bg": "gray2", "attrs": [] },
+    "gitstatus_branch":          { "fg": "gray8",           "bg": "gray2", "attrs": [] },
+    "gitstatus_branch_clean":    { "fg": "green",           "bg": "gray2", "attrs": [] },
+    "gitstatus_branch_dirty":    { "fg": "gray8",           "bg": "gray2", "attrs": [] },
+    "gitstatus_branch_detached": { "fg": "mediumpurple",    "bg": "gray2", "attrs": [] },
+    "gitstatus_tag":             { "fg": "darkcyan",        "bg": "gray2", "attrs": [] },
+    "gitstatus_behind":          { "fg": "gray10",          "bg": "gray2", "attrs": [] },
+    "gitstatus_ahead":           { "fg": "gray10",          "bg": "gray2", "attrs": [] },
+    "gitstatus_staged":          { "fg": "green",           "bg": "gray2", "attrs": [] },
+    "gitstatus_unmerged":        { "fg": "brightred",       "bg": "gray2", "attrs": [] },
+    "gitstatus_changed":         { "fg": "mediumorange",    "bg": "gray2", "attrs": [] },
+    "gitstatus_untracked":       { "fg": "brightestorange", "bg": "gray2", "attrs": [] },
+    "gitstatus_stashed":         { "fg": "darkblue",        "bg": "gray2", "attrs": [] },
+    "gitstatus:divider":         { "fg": "gray8",           "bg": "gray2", "attrs": [] }
+
+add to the following values to the right segment in the /usr/lib/python3.7/site-packages/powerline/config_files/themes/shell/default.json:
+
+{
+    "function": "powerline_gitstatus.gitstatus",
+    "priority": 40
+}
+
+remove the branch segment which has the same priority
