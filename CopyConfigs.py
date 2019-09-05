@@ -4,10 +4,62 @@ import argparse
 import subprocess
 import sys
 import os
+import re
 from pathlib import Path
 
 class NoSuchConfig(Exception):
     pass
+
+class InvalidRemote(Exception):
+    pass
+
+class Remote():
+
+    server = ""
+    path = Path()
+    port = None
+    idPath = None
+
+    def __init__(self, s, port=None, idPath=None):
+        r = re.compile(r'(?:(?P<server>(?:\w+@)?.+):)?(?P<path>.+)')
+        match = r.match(s)
+        if not match:
+            raise InvalidRemote('Invalid remote string: ' + s)
+        else:
+            match = match.groupdict()
+            if "server" in match:
+                self.server = match["server"]
+            else:
+                self.server = ""
+            self.path = Path(match["path"])
+        self.port = port
+        self.idPath = idPath
+        
+        sshString = []
+        self.sshCommand = []
+        if port:
+            sshString.append('"ssh')
+            sshString.append('-p ' + str(port))
+            if not idPath:
+                sshString[1] += '"'
+        if idPath:
+            if not port:
+                sshString.append('"ssh')
+            sshString.append('-i ' + str(Path(idPath).expanduser().resolve()) + '"')
+        sshString = " ".join(sshString)
+        if sshString:
+            self.sshCommand = ['-e', sshString]
+        print(self.sshCommand)
+
+
+    def __truediv__(self, path):
+        newRemote = Remote(str(self), self.port, self.idPath)
+        newRemote.path /= path
+        return newRemote
+
+    def __str__(self):
+        return self.server + ":" + str(self.path)
+        
 
 def sync(direction, remote, bl, wl, force, port, pk, config):
 
@@ -132,45 +184,47 @@ def sync(direction, remote, bl, wl, force, port, pk, config):
     syncFiles(rsyncList, configDictionary)
     
 
-#program description
-description='Copies configs to/from locations defined in the config'
+def __main__():
 
-#command help
-excludeHelp='Copy all configs but the ones provided by this argument.'
-includeHelp='Copy only these configs.'
-forceHelp='Force copy without asking or showing diff.'
-remoteHelp='Location to copy configs to/from. This can be anywhere reachable\
-        by rsync'
-portHelp='Set port to access remote location by.'
-idHelp='Set ID file for remote location.'
-configHelp='Config file.'
+    #program description
+    description='Copies configs to/from locations defined in the config'
 
-parser = argparse.ArgumentParser(description=description)
+    #command help
+    excludeHelp='Copy all configs but the ones provided by this argument.'
+    includeHelp='Copy only these configs.'
+    forceHelp='Force copy without asking or showing diff.'
+    remoteHelp='Location to copy configs to/from. This can be anywhere reachable\
+            by rsync'
+    portHelp='Set port to access remote location by.'
+    idHelp='Set ID file for remote location.'
+    configHelp='Config file.'
 
-#blacklist and whitelist are mutually exclusive
-blwlgroup = parser.add_mutually_exclusive_group()
+    parser = argparse.ArgumentParser(description=description)
 
-parser.add_argument('direction', choices=['to', 'from'])
-parser.add_argument('remote', help=remoteHelp)
-blwlgroup.add_argument('-b', '--blacklist', nargs='+', help=excludeHelp)
-blwlgroup.add_argument('-w', '--whitelist', nargs='+', help=includeHelp)
-parser.add_argument('-f', '--force', action='store_true', help=forceHelp)
-parser.add_argument('-p', '--port', type=int, help=portHelp)
-parser.add_argument('-i', '--identity-file', help=idHelp)
-parser.add_argument('-c', '--config', type=str, default='config', help=configHelp)
+    #blacklist and whitelist are mutually exclusive
+    blwlgroup = parser.add_mutually_exclusive_group()
 
-args = {}
+    parser.add_argument('direction', choices=['to', 'from'])
+    parser.add_argument('remote', help=remoteHelp)
+    blwlgroup.add_argument('-b', '--blacklist', nargs='+', help=excludeHelp)
+    blwlgroup.add_argument('-w', '--whitelist', nargs='+', help=includeHelp)
+    parser.add_argument('-f', '--force', action='store_true', help=forceHelp)
+    parser.add_argument('-p', '--port', type=int, help=portHelp)
+    parser.add_argument('-i', '--identity-file', help=idHelp)
+    parser.add_argument('-c', '--config', type=str, default='config', help=configHelp)
 
-try:
-    args = vars(parser.parse_args(sys.argv[1:]))
-    print(args)
-    sync(args['direction'], args['remote'], args['blacklist'],                 \
-            args['whitelist'], args['force'], args['port'],                    \
-            args['identity_file'], args['config'])
-except TypeError:
-    if len(sys.argv) == 1:
-        parser.print_usage()
-        sys.exit(0)
-    else:
-        print("Unexpected TypeError", file=sys.stderr)
-        raise
+    args = {}
+
+    try:
+        args = vars(parser.parse_args(sys.argv[1:]))
+        print(args)
+        sync(args['direction'], args['remote'], args['blacklist'],                 \
+                args['whitelist'], args['force'], args['port'],                    \
+                args['identity_file'], args['config'])
+    except TypeError:
+        if len(sys.argv) == 1:
+            parser.print_usage()
+            sys.exit(0)
+        else:
+            print("Unexpected TypeError", file=sys.stderr)
+            raise
