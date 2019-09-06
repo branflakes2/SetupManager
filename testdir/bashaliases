@@ -1,0 +1,5 @@
+alias ssh_home='ssh -i ~/.ssh/brian-server -X -p 60165 brian@brianw5.ddns.net'
+alias ipa='ip -c a'
+alias t='setsid urxvt -cd $PWD > /dev/null 2>&1 &'
+alias rdp_home='xfreerdp /w:1920 /h:1080 /u:Brian /p:DisgustedCoachOverflowRing04 /v:brianw5.ddns.net:23845'
+
