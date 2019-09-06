@@ -1,0 +1,8 @@
+autoload -Uz compinit promptinit
+compinit
+promptinit
+
+zstyle ':completion:*' menu select
+setopt COMPLETE_ALIASES 
+powerline-daemon -q
+. /usr/lib/python3.7/site-packages/powerline/bindings/zsh/powerline.zsh

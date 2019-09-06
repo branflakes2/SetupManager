@@ -1,0 +1,27 @@
+execute pathogen#infect()
+syntax on
+filetype plugin indent on
+set tabstop=4
+set shiftwidth=4
+set expandtab
+set smarttab
+set number
+set autoindent
+set background=dark
+autocmd FileType make set noexpandtab
+colorscheme solarized
+
+"use powerline status bar
+set rtp+=/usr/lib/python3.7/site-packages/powerline/bindings/vim/
+set laststatus=2
+set t_Co=256
+
+"slow insert exit fix
+if ! has('gui_running')
+  set ttimeoutlen=10
+  augroup FastEscape
+    autocmd!
+    au InsertEnter * set timeoutlen=0
+    au InsertLeave * set timeoutlen=1000
+  augroup END
+endif
