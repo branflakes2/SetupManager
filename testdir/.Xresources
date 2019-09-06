@@ -69,8 +69,8 @@ Xft.hintstyle:              hintslight
 ################
 !! Default font
 ################
-*font: xftDejaVu Sans Mono for Powerline:Book:pixelsize=15
-*boldFont: xftDejaVu Sans Mono for Powerline:Bold:pixelsize=15
+*font: xft:DejaVu Sans Mono for Powerline:Book:pixelsize=15
+*boldFont: xft:DejaVu Sans Mono for Powerline:Bold:pixelsize=15
 *letterSpace: -1
 
 ################
