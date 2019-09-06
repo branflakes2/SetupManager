@@ -58,7 +58,10 @@ class Remote():
         return newRemote
 
     def __str__(self):
-        return self.server + ":" + str(self.path)
+        if self.server:
+            return self.server + ":" + str(self.path)
+        else:
+            return str(self.path)
         
 
 def sync(direction, remote, bl, wl, force, port, pk, config):
@@ -72,79 +75,73 @@ def sync(direction, remote, bl, wl, force, port, pk, config):
             
 
     def diff(path1, path2):
-        command = ['diff', '-y', '--color=always', str(path1), str(path2), '|', 'less', '-r']
-        runcommand(command, False)
+        command = ['diff', '-y', '--color=always', str(path2), str(path1)]
+        try:
+            runCommand(command, False)
+        except:
+            pass
 
-    def ask(localPath, tmpPath):
+    def ask(src, dst):
         a = ""
-        while a.to_lower() not in ['y', 'n', 'd']:
-            if direction == "to":
-                a = input("Overwrite remote version of " + str(localPath) + \
-                        "? Use d to show diff (y/n/d): ")
-            else:
-                a = input("Overwrite " + str(localPath) + "? Use d to show diff\
-                    (y/n/d): ")
+        while a.lower() not in ['y', 'n', 'd']:
+            a = input("Overwrite " + str(dst) + "?  Use d for diff (y/n/d):")
         if a == "y":
             return True
         if a == "n":
             return False
         if a == "d":
-            if direction == "to":
-                diff(tmpPath, localPath)
-            else:
-                diff(localPath, tmpPath)
-        return ask(localPath, tmpPath)
+            diff(src, dst)
+        return ask(src, dst)
 
     def resolvePath(filename):
         return str(Path(filename).expanduser().resolve())
 
-    def buildRsyncCommand(srcPath, dstPath):
-        command = ['rsync']
-        if pk:
-            command.append('-e')
-            command.append('"ssh -i ' + pk + '"')
+    def buildRsyncCommand(srcPath, dstPath, baseCommand):
+        command = baseCommand.copy()
+        command.extend(remote.sshCommand)
         if type(srcPath) is list:
-            command += srcPath
+            command.extend(srcPath)
         else:
             command.append(str(srcPath))
         command.append(str(dstPath))
         print(command)
         return command
 
-    def syncFile(localPath, remoteName):
-        command = ""
-        if direction == "to":
-            command = buildRsyncCommand(localPath, remote + '/' + remoteName)
-        else:
-            command = buildRsyncCommand('/tmp/' + remoteName, localPath)
-        if not force and ((direction == "to" and os.path.isfile('/tmp/remoteName') or (direction == "from" and os.path.isfile(localPath)))):
-            if ask(localPath, '/tmp/' + remoteName):
-                runCommand(command)
-        else:
-            runCommand(command)
+    def clearTemp(confDict):
+        t = Path("/tmp")
+        for f in confDict:
+            p = t/f
+            if p.is_file():
+                os.remove(p)
 
-    def syncFiles(fileList, confDict):
-        for f in fileList:
-            syncFile(confDict[f].strip(), f)
+    def rsyncFrom(rsyncList, baseDir, configDict):
+        [runCommand(buildRsyncCommand(str(baseDir / p), configDict[p], ['rsync', '-b']), False) for p in rsyncList]
 
-    def pushNew(rsyncList, configDict):
-        copyList = []
-        for f in rsyncList:
-            copyList.append(resolvePath(configDict[f].strip()))
-        print(copyList)
-        command = ['rsync', '--ignore-existing']
-        for f,r in zip(copyList, rsyncList):
-            command.append(f)
-            command.append(remote + '/' + r)
-            print(command)
+    #copies the local files to a new location, and renames them to their 
+    #remote names
+    def syncAndRename(rsyncList, configDict, dst, baseCommand):
+        command = baseCommand.copy()
+        for r in rsyncList:
+            command.extend([configDict[r], dst / r])
             runCommand(command, False)
-            command = ['rsync', '--ignore-existing']
+            command = baseCommand
+
+    def push(rsyncList, configDict, baseCommand):
+        c = rsyncList.copy()
+        if remote.server:
+            #stage the files in the /tmp directory 
+            syncAndRename(c, configDict, Path("/tmp"), ['rsync'])
+            c = [str(Path("/tmp") / p) for p in c]
+            command = buildRsyncCommand(c, str(remote / '.'), baseCommand.copy())
+            runCommand(command, False)
+        else:
+            [runCommand(buildRsyncCommand(configDict[p], str(remote / p), baseCommand.copy()), False) for p in rsyncList]
 
     def getLocalCopy(rsyncList):
         remoteList = []
         for f in rsyncList:
-            remoteList.append(remote + "/" + f)
-        command = buildRsyncCommand(remoteList, '/tmp/')
+            remoteList.append(str(remote / f))
+        command = buildRsyncCommand(remoteList, '/tmp/', ['rsync'])
         runCommand(command, False)
         
     def syncWL(confDict):
@@ -175,16 +172,67 @@ def sync(direction, remote, bl, wl, force, port, pk, config):
         else:
             return normalSync(confDict)
 
+    def askOverwrite(compareSrc, compareDst, rsyncList):
+        i = 0
+        while i < len(rsyncList):
+            if compareDst[i].is_file():
+                if subprocess.run(['cmp', '-s', compareSrc[i], compareDst[i]]).returncode:
+                    if not ask(compareSrc[i], compareDst[i]):
+                        compareSrc.pop(i)
+                        compareDst.pop(i)
+                        rsyncList.pop(i)
+                else:
+                    compareSrc.pop(i)
+                    compareDst.pop(i)
+                    rsyncList.pop(i)
+
+            i += 1
+
+
     configPath=resolvePath(config)
-    configDictionary=dict(line.split(':', 1) for line in open(configPath))
+    configDictionary=dict(line.strip().split(':', 1) for line in open(configPath))
+    for k in configDictionary:
+        configDictionary[k] = Path(configDictionary[k]).expanduser().resolve()
     rsyncList = getRsyncList(configDictionary)
-    pushNew(rsyncList, configDictionary)
-    print(rsyncList)
-    getLocalCopy(rsyncList)
-    syncFiles(rsyncList, configDictionary)
+    push(rsyncList, configDictionary, ['rsync', '--ignore-existing'])
+    compareSrc = []
+    compareDst = []
+    if remote.server:
+        getLocalCopy(rsyncList) 
+        p = Path("/tmp")
+        if direction == "to":
+            for name in rsyncList:
+                compareDst.append(p / name)
+                compareSrc.append(configDictionary[name])
+        else:
+            for name in rsyncList:  
+                compareDst.append(configDictionary[name])
+                compareSrc.append(p / name)
+    else:
+        if direction == "to":
+            for name in rsyncList:
+                compareDst.append(remote.path / name)
+                compareSrc.append(configDictionary[name])
+        else:
+            for name in rsyncList:
+                compareDst.append(configDictionary[name])
+                compareSrc.append(remote.path / name)
+
+    askOverwrite(compareSrc, compareDst, rsyncList)
+    if direction == "to":
+        push(rsyncList, configDictionary, ['rsync', '-b'])
+    else:
+        baseDir = ""
+        if remote.server:
+            baseDir = Path("/tmp")
+        else:
+            baseDir = remote.path
+        rsyncFrom(rsyncList, baseDir, configDictionary)
+
+    clearTemp(configDictionary)
     
 
-def __main__():
+if __name__ == "__main__":
 
     #program description
     description='Copies configs to/from locations defined in the config'
@@ -218,7 +266,7 @@ def __main__():
     try:
         args = vars(parser.parse_args(sys.argv[1:]))
         print(args)
-        sync(args['direction'], args['remote'], args['blacklist'],                 \
+        sync(args['direction'], Remote(args['remote']), args['blacklist'],                 \
                 args['whitelist'], args['force'], args['port'],                    \
                 args['identity_file'], args['config'])
     except TypeError:
