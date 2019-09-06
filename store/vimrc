@@ -12,9 +12,11 @@ autocmd FileType make set noexpandtab
 colorscheme solarized
 
 "use powerline status bar
-set rtp+=/usr/lib/python3.7/site-packages/powerline/bindings/vim/
-set laststatus=2
-set t_Co=256
+if $TERM != 'linux'
+    set rtp+=/usr/lib/python3.7/site-packages/powerline/bindings/vim/
+    set laststatus=2
+    set t_Co=256
+endif
 
 "slow insert exit fix
 if ! has('gui_running')
