@@ -128,7 +128,10 @@ def sync(direction, remote, bl, wl, force, port, pk, config):
             command = baseCommand
 
     def push(rsyncList, configDict, baseCommand):
-        c = rsyncList.copy()
+        c = []
+        for n in rsyncList:
+            if Path(configDict[n]).is_file():
+                c.append(n)
         if remote.server:
             #stage the files in the /tmp directory 
             syncAndRename(c, configDict, Path("/tmp"), ['rsync'])
@@ -136,7 +139,7 @@ def sync(direction, remote, bl, wl, force, port, pk, config):
             command = buildRsyncCommand(c, str(remote / '.'), baseCommand.copy())
             runCommand(command, False)
         else:
-            [runCommand(buildRsyncCommand(configDict[p], str(remote / p), baseCommand.copy()), False) for p in rsyncList]
+            [runCommand(buildRsyncCommand(configDict[p], str(remote / p), baseCommand.copy()), False) for p in c]
 
     def getLocalCopy(rsyncList):
         remoteList = []
