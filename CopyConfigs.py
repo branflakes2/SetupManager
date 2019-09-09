@@ -132,6 +132,7 @@ def sync(direction, remote, bl, wl, force, port, pk, config):
         for n in rsyncList:
             if Path(configDict[n]).is_file():
                 c.append(n)
+        print(c)
         if remote.server:
             #stage the files in the /tmp directory 
             syncAndRename(c, configDict, Path("/tmp"), ['rsync'])
