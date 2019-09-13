@@ -8,7 +8,7 @@
 source ~/.bash_aliases
 
 alias ls='ls --color=auto'
-PS1='[\u@\h \W]\$ '
+PS1='[\u@\h $(echo \w | rev | cut -d / -f 1,2 | rev)]\$ '
 
 export VISUAL="vim"
 if [ $TERM != linux ]; then

@@ -32,7 +32,7 @@ new_window pixel 2
 floating_modifier $mod
 
 # start a terminal
-bindsym $mod+Return exec urxvt -e /bin/zsh
+bindsym $mod+Return exec urxvt
 
 # kill focused window
 bindsym $mod+Shift+q kill
@@ -227,8 +227,7 @@ new_window pixel 2
 #exec --no-startup-id xrandr --output eDP-1 --auto
 exec_always --no-startup-id feh --bg-fill /home/brian/Pictures/Backgrounds/_DSC0752.jpg
 exec_always --no-startup-id /home/brian/.config/i3/launch.sh &
-exec --no-startup-id blueman-applet
-exec export PATH=$PATH:/ssd2/brian/intelFPGA_lite/18.1/quartus/bin
 exec --no-startup-id ~/.config/i3/polybar-launch.sh
+exec_always --no-startup-id powerline-daemon -rq
 
 #bindsym $mod+c exec --no-startup-id python ~/theme-gen/test.py
