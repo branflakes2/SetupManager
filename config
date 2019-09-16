@@ -12,3 +12,4 @@ bashrc:/home/brian/.bashrc
 bashaliases:/home/brian/.bash_aliases
 bashprofile:/home/brian/.bash_profile
 lightdm:/etc/lightdm/lightdm.conf
+seal:/home/brian/.face
