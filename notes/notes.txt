@@ -28,6 +28,9 @@ AppName{
 
     color_scheme: override_name
 
+    dependencies: AppList
+    installation: command
+
     config{
         name: name_of_config1
         location: where_to_copy
@@ -39,5 +42,55 @@ AppName{
         location:
         cutout:
     }
-
 }
+
+Configs:
+    To start, add a bunch of files to a list to track them
+    
+App hierarchy:
+    apps have dependencies, and therefore a hierarchy.
+    configuration changes in apps lower in the tree override app configs higher
+        in the tree
+    for example, lightdm by default uses the gtk greeter. If i installed webkit
+    greeter, i need to change the greeter settings in lightdm.conf
+    i would make an app for lightdm and webkit greeter. I would give webkit
+    greeter a dependency of lightdm. Since webkit greeter is lower in the app
+    hierarchy, its greeter settings in lightdm.conf will override lightdm's
+    default settings.
+
+    changes to configuration made by the app should be the minimum possible to
+    get the app working. further changes should be done through profiles
+
+Profiles:
+    profiles can be written to override apps' default settings. If I want to
+    write a profile to change the color and font settings of some of my
+    favorite programs, I would first create apps for them. Then, I would edit
+    the apps' configurations to reflect the changes I want, and tag those
+    changes with the profile name, and attach them to the apps.
+
+    Profiles may be given a hierarchy to give precedence for apps which have
+    configurations for multiple enabled profiles. If a configuration does not
+    have any profile changes, it will use the default profile.
+
+    All app changes trump profile changes. An app lower in the app tree trumps
+    a profile change of a higher app. This
+
+    Some profiles may want to add or remove files to affect the configuration
+    of some apps. For example, the enabling and disabling of vim plugins using
+    pathogen. I want to support this, but am not really sure how yet.
+
+
+
+When moving to store:
+    When a change is detected:
+        Is it in an app cutout? y/n
+            y: Is it a global change for the app? y/n
+                y: update the app cutout to reflect the change
+                n: is the change to support the specific system hardware??:
+                    y: add a sub-cutout to the app cutout
+                    n: create or add this change to a new/different configuration profile?
+                        y: copy the app configuration directory tree to the new profile, update current configuration profile to reflect the new profile
+                        n: untracked change. Warn if this change is overwritten by profile change
+
+
+
