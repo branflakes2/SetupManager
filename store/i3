@@ -222,12 +222,12 @@ bindsym $mod+shift+s exec i3lock
 bindsym $mod+i exec --no-startup-id firefox 
 bindsym $mod+n exec --no-startup-id nautilus
 
-exec source ~/.bashrc
+exec --no-startup-id source ~/.bashrc
 new_window pixel 2
 #exec --no-startup-id xrandr --output eDP-1 --auto
-exec_always --no-startup-id feh --bg-fill /home/brian/Pictures/Backgrounds/_DSC0752.jpg
+exec_always --no-startup-id feh --bg-fill /usr/share/backgrounds/brian/smokies.jpg
 exec_always --no-startup-id /home/brian/.config/i3/launch.sh &
-exec --no-startup-id ~/.config/i3/polybar-launch.sh
+exec_always --no-startup-id ~/.config/i3/polybar-launch.sh
 exec_always --no-startup-id powerline-daemon -rq
 
 #bindsym $mod+c exec --no-startup-id python ~/theme-gen/test.py

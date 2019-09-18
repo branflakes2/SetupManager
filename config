@@ -12,4 +12,8 @@ bashrc:/home/brian/.bashrc
 bashaliases:/home/brian/.bash_aliases
 bashprofile:/home/brian/.bash_profile
 lightdm:/etc/lightdm/lightdm.conf
+lightdmwebkit:/etc/lightdm/lightdm-webkit2-greeter.conf
 seal:/home/brian/.face
+background:/usr/share/backgrounds/brian/smokies.jpg
+litarvanBackground:/usr/share/lightdm-webkit/themes/litarvan/images/backround.smokies.jpg
+polybarlaunch:/home/brian/.config/i3/polybar-launch.sh

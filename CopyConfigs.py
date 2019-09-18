@@ -38,7 +38,6 @@ class Remote():
         sshString = []
         self.sshCommand = []
         if port:
-            print("PORT")
             sshString.append('"/usr/bin/ssh')
             sshString.append('-p ' + str(port))
             if not idPath:
@@ -50,7 +49,6 @@ class Remote():
         sshString = " ".join(sshString)
         if sshString:
             self.sshCommand = ['-e', sshString]
-        print(self.sshCommand)
 
 
     def __truediv__(self, path):
@@ -105,7 +103,6 @@ def sync(direction, remote, bl, wl, force, port, pk, config):
         else:
             command.append(str(srcPath))
         command.append(str(dstPath))
-        print(command)
         return command
 
     def clearTemp(confDict):
@@ -132,7 +129,6 @@ def sync(direction, remote, bl, wl, force, port, pk, config):
         for n in rsyncList:
             if Path(configDict[n]).is_file():
                 c.append(n)
-        print(c)
         if remote.server:
             #stage the files in the /tmp directory 
             syncAndRename(c, configDict, Path("/tmp"), ['rsync'])
@@ -270,7 +266,6 @@ if __name__ == "__main__":
 
     try:
         args = vars(parser.parse_args(sys.argv[1:]))
-        print(args)
         sync(args['direction'], Remote(args['remote'], args['port'], args['identity_file']), args['blacklist'],                 \
                 args['whitelist'], args['force'], args['port'],                    \
                 args['identity_file'], args['config'])
