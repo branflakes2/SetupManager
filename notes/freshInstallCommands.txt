@@ -192,3 +192,5 @@ add to the following values to the right segment in the /usr/lib/python3.7/site-
 }
 
 remove the branch segment which has the same priority
+
+install pulseaudio
