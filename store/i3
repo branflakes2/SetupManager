@@ -216,7 +216,7 @@ bindsym XF86AudioMute exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ 
 
 bindsym $mod+period exec /home/brian/.config/i3/backlight.sh -inc # increase screen brightness
 bindsym $mod+comma exec /home/brian/.config/i3/backlight.sh -dec # decrease screen brightness
-bindsym $mod+shift+s exec i3lock
+bindsym $mod+shift+s exec i3lock -i /usr/share/backgrounds/brian/smokies.png
 
 
 bindsym $mod+i exec --no-startup-id firefox 
