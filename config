@@ -18,3 +18,4 @@ background:/usr/share/backgrounds/brian/smokies.jpg
 i3lockbackground:/usr/share/backgrounds/brian/smokies.png
 litarvanBackground:/usr/share/lightdm-webkit/themes/litarvan/images/backround.smokies.jpg
 polybarlaunch:/home/brian/.config/i3/polybar-launch.sh
+sshconfig:/home/brian/.ssh/config

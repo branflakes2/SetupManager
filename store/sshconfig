@@ -1,0 +1,27 @@
+Host mammoth
+    HostName mammoth1.ornl.gov
+    User 7uw
+
+Host corr-boss
+    HostName emulabfw-ext.ornl.gov
+    User orchestration
+    ProxyJump mammoth
+    Port 3222
+
+Host whitebox
+    HostName vcenter.nexgen.gov
+    User 7uw
+
+Host blackbox
+    Hostname 160.91.248.214
+    User 7uw
+
+Host testboss
+    Hostname 10.0.26.1
+    User orchestration
+    ProxyJump blackbox
+
+Host boss-baby
+    HostName 172.16.1.125
+    ProxyJump whitebox
+    User orchestration
